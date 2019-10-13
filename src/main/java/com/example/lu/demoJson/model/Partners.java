@@ -7,7 +7,6 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Result {
-   private List<Record> recordList;
-   private String label;
+public class Partners {
+   private List<Partner> partners;
 }

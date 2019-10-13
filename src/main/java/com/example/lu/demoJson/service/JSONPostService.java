@@ -1,6 +1,7 @@
 package com.example.lu.demoJson.service;
 
-import com.example.lu.demoJson.model.Record;
+import com.example.lu.demoJson.model.Countries;
+import com.example.lu.demoJson.model.Partner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -11,25 +12,21 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 @Service
 public class JSONPostService {
 
-    public void postJSON(List<Record> recordList) {
+    public void postJSON(Countries countries) {
 
-        if (recordList != null && recordList.size() > 0) {
+        if (countries != null) {
             try {
                 CloseableHttpClient client = HttpClients.createDefault();
                 HttpPost httpPost = new HttpPost("http://httpbin.org/post");
 
 
                 ObjectMapper objectMapper = new ObjectMapper();
-                String recordListString = objectMapper.writeValueAsString(recordList);
-                String json = "{\"name\": \"Upendra\", \"job\": \"Programmer\"}";
+                String recordListString = objectMapper.writeValueAsString(countries);
 
                 StringEntity entity = new StringEntity(recordListString);
                 httpPost.setEntity(entity);

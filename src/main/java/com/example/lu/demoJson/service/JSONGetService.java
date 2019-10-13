@@ -1,14 +1,8 @@
 package com.example.lu.demoJson.service;
 
-import com.example.lu.demoJson.model.Record;
-import com.example.lu.demoJson.model.Result;
-import com.example.lu.demoJson.model.ResultWrapper;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.example.lu.demoJson.model.Partner;
+import com.example.lu.demoJson.model.Partners;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -21,11 +15,11 @@ import java.util.Scanner;
 @Service
 public class JSONGetService {
 
-    public static final String GET_URL = "http://jsonplaceholder.typicode.com/todos";
+    public static final String GET_URL = "https://candidate.hubteam.com/candidateTest/v3/problem/dataset?userKey=3b4898064fd14cd139e44e5e9c82";
 
-    public  List<Record> getJson() {
+    public  List<Partner> getJson() {
         String inline = "";
-        List<Record> recordList = new ArrayList<>();
+        List<Partner> partnerList = new ArrayList<>();
         try {
             URL url = new URL(GET_URL);
             //Parse URL into HttpURLConnection in order to open the connection in order to get the JSON data
@@ -54,42 +48,17 @@ public class JSONGetService {
                 sc.close();
             }
             ObjectMapper objectMapper = new ObjectMapper();
+             Partners partners = objectMapper.readValue(inline,  Partners.class);
 
-            String temp = "{\"result\":{\"label\": \"labeltest\",\"recordList\":[{\"userId\":2,\"id\": 1, \"title\":\"hahaha\",\"completed\":false }, {\"userId\":2,\"id\": 1, \"title\":\"hajdhaha\",\"completed\":false }]}}";
+            partnerList = partners.getPartners();
 
-            ResultWrapper result = objectMapper.readValue(temp,  ResultWrapper.class);
 
-            recordList = result.getResult().getRecordList();
-
-//            JSONParser parser = new JSONParser();
-//            JSONArray array = (JSONArray) parser.parse(inline);
-//
-//
-//            // Loop through each item
-//            array.forEach(o -> {
-//                JSONObject record = (JSONObject) o;
-//
-//                Long userId = (Long) record.get("userId");
-//                System.out.println("USER ID : " + userId);
-//
-//                Long id = (Long) record.get("id");
-//                System.out.println("ID : " + id);
-//
-//                String title = (String) record.get("title");
-//                System.out.println("Title : " + title);
-//
-//                Boolean completed = (Boolean) record.get("completed");
-//                System.out.println("completed : " + completed);
-//
-//
-//                System.out.println("\n");
-//            });
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return recordList;
+        return partnerList;
     }
 
     private HttpURLConnection createConnection(String urlString) throws MalformedURLException, IOException, ProtocolException {
