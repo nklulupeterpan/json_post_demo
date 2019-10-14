@@ -9,6 +9,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -16,13 +18,14 @@ import java.util.List;
 
 @Service
 public class JSONPostService {
+    private static final Logger logger = LoggerFactory.getLogger(JSONGetService.class);
 
-    public void postJSON(Countries countries) {
-
+    public boolean postJSON(Countries countries) {
+        boolean successful = false;
         if (countries != null) {
             try {
                 CloseableHttpClient client = HttpClients.createDefault();
-                HttpPost httpPost = new HttpPost("http://httpbin.org/post");
+                HttpPost httpPost = new HttpPost("https://candidate.hubteam.com/candidateTest/v3/problem/result?userKey=3b4898064fd14cd139e44e5e9c82");
 
 
                 ObjectMapper objectMapper = new ObjectMapper();
@@ -34,60 +37,19 @@ public class JSONPostService {
                 httpPost.setHeader("Content-type", "application/json");
 
                 CloseableHttpResponse response = client.execute(httpPost);
-
                 if (response.getStatusLine().getStatusCode() == 200) {
-                    String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
-                    System.out.println(responseString);
+                    successful = true;
+                    logger.info("POST is succesful");
                 }
+
+                String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
+                logger.info("POST response : {}", responseString);
                 client.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-//            try {
-//                URL url = new URL("https://postman-echo.com/post");
-//
-//                HttpURLConnection con = (HttpURLConnection) url.openConnection();
-//                con.setRequestMethod("POST");
-//                con.setRequestProperty("Content-Type", "application/json");
-//                con.setRequestProperty("Accept", "application/json");
-//                con.setDoOutput(true);
-//
-//                ObjectMapper objectMapper = new ObjectMapper();
-//
-//                String recordListString = objectMapper.writeValueAsString(recordList);
-//
-//                String jsonInputString = "{\"name\": \"Upendra\", \"job\": \"Programmer\"}";
-//                OutputStream os = con.getOutputStream();
-//                os.write(jsonInputString.getBytes());
-//                os.flush();
-//
-//                if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-//                    throw new RuntimeException("Failed : HTTP error code : "
-//                            + con.getResponseCode());
-//                }
-//
-//                BufferedReader br = new BufferedReader(new InputStreamReader(
-//                        (con.getInputStream())));
-//
-//                String output;
-//                System.out.println("Output from Server .... \n");
-//                while ((output = br.readLine()) != null) {
-//                    System.out.println(output);
-//                }
-//
-//                con.disconnect();
-//
-//            } catch (MalformedURLException e) {
-//
-//                e.printStackTrace();
-//
-//            } catch (IOException e) {
-//
-//                e.printStackTrace();
-//
-//            }
-
         }
+        return successful;
     }
 }

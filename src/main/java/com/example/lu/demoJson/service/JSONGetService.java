@@ -3,6 +3,8 @@ package com.example.lu.demoJson.service;
 import com.example.lu.demoJson.model.Partner;
 import com.example.lu.demoJson.model.Partners;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
@@ -14,6 +16,8 @@ import java.util.Scanner;
 
 @Service
 public class JSONGetService {
+
+    private static final Logger logger = LoggerFactory.getLogger(JSONGetService.class);
 
     public static final String GET_URL = "https://candidate.hubteam.com/candidateTest/v3/problem/dataset?userKey=3b4898064fd14cd139e44e5e9c82";
 
@@ -30,7 +34,7 @@ public class JSONGetService {
             conn.connect();
             //Get the response status of the Rest API
             int responsecode = conn.getResponseCode();
-            System.out.println("Response code is: " + responsecode);
+            logger.info("Response code is:  {}" + responsecode);
 
             //Iterating condition to if response code is not 200 then throw a runtime exception
             //else continue the actual process of getting the JSON data
@@ -42,13 +46,12 @@ public class JSONGetService {
                 while (sc.hasNext()) {
                     inline += sc.nextLine();
                 }
-                System.out.println("\nJSON Response in String format");
-                System.out.println(inline);
+               logger.info("\nJSON Response in String format {}", inline);
                 //Close the stream when reading the data has been finished
                 sc.close();
             }
             ObjectMapper objectMapper = new ObjectMapper();
-             Partners partners = objectMapper.readValue(inline,  Partners.class);
+            Partners partners = objectMapper.readValue(inline,  Partners.class);
 
             partnerList = partners.getPartners();
 
@@ -59,13 +62,6 @@ public class JSONGetService {
             e.printStackTrace();
         }
         return partnerList;
-    }
-
-    private HttpURLConnection createConnection(String urlString) throws MalformedURLException, IOException, ProtocolException {
-        URL url = new URL(String.format(urlString));
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        return connection;
     }
 
 }

@@ -8,10 +8,8 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Attendee2 {
+public class StartDatesPerCountry {
 
-    private Integer attendeeCount;
-    private List<String> attendees;
     private String name;
-    private Date startDate;
+    private List<String> startDates;
 }

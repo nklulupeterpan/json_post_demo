@@ -3,6 +3,7 @@ package com.example.lu.demoJson.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
 public class Attendee {
 
     private Integer attendeeCount;
-    private List<String> attendees;
+    private List<String> attendees = new ArrayList<>();
     private String name;
-    private List<Date> startDate;
+    private String startDate;
 }

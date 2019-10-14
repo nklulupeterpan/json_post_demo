@@ -1,5 +1,6 @@
 package com.example.lu.demoJson.controller;
 
+import com.example.lu.demoJson.model.Countries;
 import com.example.lu.demoJson.model.Partner;
 import com.example.lu.demoJson.service.CalculateAttend;
 import com.example.lu.demoJson.service.JSONGetService;
@@ -29,9 +30,14 @@ public class PostJSON {
 
         List<Partner> partnerList = getService.getJson();
 
+        Countries countries = calculateAttend.doCalculate(partnerList);
 
-        postService.postJSON(calculateAttend.doCalculate(partnerList));
-        return new ResponseEntity<Object>(partnerList, HttpStatus.OK);
+        if(postService.postJSON(countries)) {
+
+            return new ResponseEntity<>(countries, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(countries, HttpStatus.BAD_REQUEST);
+        }
 
     }
 

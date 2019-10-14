@@ -1,97 +1,107 @@
 package com.example.lu.demoJson.service;
 
-import com.example.lu.demoJson.model.Attendee;
-import com.example.lu.demoJson.model.Attendee2;
-import com.example.lu.demoJson.model.Countries;
-import com.example.lu.demoJson.model.Partner;
+import com.example.lu.demoJson.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
 public class CalculateAttend {
+    private static final Logger logger = LoggerFactory.getLogger(CalculateAttend.class);
 
-    HashMap<String, Attendee> list = new HashMap<>();
+    HashMap<String, StartDatesPerCountry> list = new HashMap<>();
 
     public Countries doCalculate(List<Partner> partnerList) {
+        //store all qualified start days for all partners per country
         for (Partner partner : partnerList) {
 
             if (list.get(partner.getCountry()) == null) {
-                Attendee attendee = new Attendee();
-                attendee.setName(partner.getCountry());
-                attendee.setStartDate(getStartDayRow(partner.getAvailableDates(), new ArrayList<>()));
-            }else{
-                Attendee attendee = list.get(partner.getCountry());
-                attendee.setStartDate( getStartDayRow(partner.getAvailableDates(), attendee.getStartDate()));
+                StartDatesPerCountry startDatesPerCountry = new StartDatesPerCountry();
+                startDatesPerCountry.setName(partner.getCountry());
+                startDatesPerCountry.setStartDates(getStartDayRow(partner.getAvailableDates(), new ArrayList<>()));
+                list.put(partner.getCountry(), startDatesPerCountry);
+            } else {
+                StartDatesPerCountry startDatesPerCountry = list.get(partner.getCountry());
+                startDatesPerCountry.setStartDates(getStartDayRow(partner.getAvailableDates(), startDatesPerCountry.getStartDates()));
+                list.put(partner.getCountry(), startDatesPerCountry);
             }
         }
 
-        HashMap<String, Attendee2> list2 = new HashMap<>();
-        for (Map.Entry<String, Attendee> entry : list.entrySet()) {
+        //calculate the most frequent start date per country
+        HashMap<String, Attendee> attendeeList = new HashMap<>();
+        for (Map.Entry<String, StartDatesPerCountry> entry : list.entrySet()) {
             String key = entry.getKey();
-            Attendee attendee = entry.getValue();
-            Attendee2 attendee2 = new Attendee2();
-            attendee2.setAttendeeCount(0);
-            attendee2.setName(key);
-            attendee2.setStartDate(mostCommonElement(attendee.getStartDate()));
-            list2.put(key, attendee2);
+            StartDatesPerCountry startDatesPerCountry = entry.getValue();
+            Attendee attendee = new Attendee();
+            attendee.setAttendeeCount(0);
+            attendee.setName(key);
+            if (startDatesPerCountry.getStartDates() == null || startDatesPerCountry.getStartDates().isEmpty()) {
+                attendee.setStartDate(null);
+            } else {
+                attendee.setStartDate(mostCommonElement(startDatesPerCountry.getStartDates()));
+            }
+            attendeeList.put(key, attendee);
         }
 
 
+        // find and count the attendees that has the most frequent start date
         for (Partner partner : partnerList) {
 
-        Attendee2 attendee2 = list2.get(partner.getCountry());
-            if(partner.getAvailableDates().contains(attendee2.getStartDate())){
-                int count = attendee2.getAttendeeCount() +1;
-                attendee2.getAttendees().add(partner.getEmail());
-                attendee2.setAttendeeCount(count+1);
+            Attendee attendee = attendeeList.get(partner.getCountry());
+            if (partner.getAvailableDates().contains(attendee.getStartDate())) {
+                int count = attendee.getAttendeeCount() + 1;
+                attendee.getAttendees().add(partner.getEmail());
+                attendee.setAttendeeCount(count);
             }
         }
 
         Countries countries = new Countries();
-        countries.setAttendees(new ArrayList(list2.values()));
+        countries.setCountries(new ArrayList(attendeeList.values()));
         return countries;
     }
 
 
-    private static Date mostCommonElement(List<Date> list) {
+    private static String mostCommonElement(List<String> list) {
 
-        Map<Date, Integer> map = new HashMap<Date, Integer>();
+        Collections.sort(list);
+        Map<String, Integer> map = new TreeMap<>();
 
-        for(int i=0; i< list.size(); i++) {
+        for (int i = 0; i < list.size(); i++) {
 
             Integer frequency = map.get(list.get(i));
-            if(frequency == null) {
+            if (frequency == null) {
                 map.put(list.get(i), 1);
             } else {
-                map.put(list.get(i), frequency+1);
+                map.put(list.get(i), frequency + 1);
             }
         }
 
-        Date mostCommonKey = null;
+        String mostCommonKey = null;
         int maxValue = -1;
-        for(Map.Entry<Date, Integer> entry: map.entrySet()) {
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
 
-            if(entry.getValue() > maxValue) {
+            if (entry.getValue() > maxValue) {
                 mostCommonKey = entry.getKey();
                 maxValue = entry.getValue();
             }
         }
+        logger.info("find most frequent date", mostCommonKey);
 
         return mostCommonKey;
     }
 
-    private List<Date> getStartDayRow(List<Date> availableDays, List<Date> startDate) {
-        for (int i = 0; i < availableDays.size()-1; i++) {
-            Date next = availableDays.get(i + 1);
-            Date current = availableDays.get(i);
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(current);
-            cal.add(Calendar.DATE, 1);
-            if (cal.getTime().compareTo(next) == 0) {
+    private List<String> getStartDayRow(List<String> availableDays, List<String> startDate) {
+        for (int i = 0; i < availableDays.size() - 1; i++) {
+            String next = availableDays.get(i + 1);
+            String current = availableDays.get(i);
+            String nextDay = LocalDate.parse(current).plusDays(1).toString();
+            if (next.equalsIgnoreCase(nextDay)) {
                 startDate.add(current);
             }
         }
-      return startDate;
+        return startDate;
     }
 }

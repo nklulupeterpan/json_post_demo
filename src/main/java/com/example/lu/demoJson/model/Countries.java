@@ -8,5 +8,5 @@ import java.util.List;
 @Setter
 @Getter
 public class Countries {
-    private List<Attendee> attendees;
+    private List<Attendee> countries;
 }
